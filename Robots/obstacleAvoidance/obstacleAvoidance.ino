@@ -1,3 +1,12 @@
+/*
+
+obstacleAvoidance
+
+http://www.wirebeings.com
+
+
+*/
+
 
 int enA = 10;
 int in1 = 9;
@@ -25,6 +34,8 @@ void setup() {
   pinMode(in4, OUTPUT);
 
   Serial.begin (9600);
+  Serial.println("obstacleAvoidance");
+  Serial.println("by wirebeings");
   pinMode(trigPin, OUTPUT);
   pinMode(echoPin, INPUT);
 
