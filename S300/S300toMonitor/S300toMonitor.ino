@@ -38,17 +38,14 @@
   5V      1
   GND     2
 
-  10      2
-  11      1
-
   2016/02/18
 
 
 */
 #include <SoftwareSerial.h>
 
-#define rxPin 10
-#define txPin 11
+#define rxPin 2   //rx on 3 doesn't work!
+#define txPin 3
 
 SoftwareSerial mySerial(rxPin, txPin); // RX, TX
 
@@ -66,17 +63,17 @@ void setup() {
   pinMode(rxPin, INPUT);
   pinMode(txPin, OUTPUT);
   mySerial.begin(38400);
-  //mySerial.println("Hello, world?");
+  Serial.println("Start");
 }
 
 void loop() { // run over and over
   if (mySerial.available()) {
     Serial.write(mySerial.read());
   }
-
+/*
   if (Serial.available()) {
     mySerial.write(Serial.read());
   }
-
+*/
 }
 
