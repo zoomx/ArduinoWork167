@@ -24,9 +24,13 @@
   Added Time using DS1307
   Pin used A4 (SDA),A5 (SDL)
 
-  Button on PIN 4
+  Button on PIN 7
   LED green on PIN 5
   LED red on PIN 6
+
+
+  Arduino Button Library by Jack Christensen
+  https://github.com/JChristensen/Button
 */
 
 #include <SoftwareSerial.h>
@@ -36,14 +40,20 @@
 #include <Wire.h>
 #include <DS1307new.h>
 
-#include <Bounce2.h>
+#include <Button.h>        //https://github.com/JChristensen/Button
 
 // Log file base name.  Must be six characters or less.
 #define FILE_BASE_NAME "Data"
 
-#define GREENLED 4
-#define REDLED 6
+#define GREENLED 5  //PWM pin
+#define REDLED 6 //PWM pin
 #define BUTTON 7
+#define PULLUP false        //To keep things simple, we use the Arduino's internal pullup resistor.
+#define INVERT true        //Since the pullup resistor will keep the pin high unless the
+//switch is closed, this is negative logic, i.e. a high state
+//means the button is NOT pressed. (Assuming a normally open switch.)
+#define DEBOUNCE_MS 20     //A debounce time of 20 milliseconds usually works well for tactile button switches.
+#define LONG_PRESS 1000    //We define a "long press" to be 1000 milliseconds.
 
 #define INLENGTH 5          //Needed for input with termination
 #define INTERMINATOR 13     //Needed for input with termination
@@ -69,9 +79,9 @@ bool InAcq = false;
 
 int ore, minuti, secondi;
 
-byte previousState = HIGH;         // what state was the button last time
+//byte previousState = HIGH;         // what state was the button last time
 
-Bounce pushbutton = Bounce(BUTTON, 10);  // 10 ms debounce
+Button pushbutton(BUTTON, PULLUP, INVERT, DEBOUNCE_MS);    //Declare the button
 
 //Serial input withEndMarker
 //http://forum.arduino.cc/index.php?topic=288234.0
@@ -199,11 +209,19 @@ void SD_print_time(uint16_t h, uint8_t m, uint8_t s)
 }
 //------------------------------------------------------------------------------
 void BlinkGreen() {
-  Serial.println(F("Blink LED 13"));
+  Serial.println(F("Blink Green LED"));
+  digitalWrite(GREENLED, HIGH);
+  delay(100);
+  digitalWrite(GREENLED, LOW);
+  delay(100);
 }
 //------------------------------------------------------------------------------
 void BlinkRed() {
-  Serial.println(F("Blink LED 13"));
+  Serial.println(F("Blink Red LED"));
+  digitalWrite(REDLED, HIGH);
+  delay(100);
+  digitalWrite(REDLED, LOW);
+  delay(100);
 }
 //------------------------------------------------------------------------------
 void StopAcq() {
@@ -357,6 +375,7 @@ void logData(int ppm) {
   file.print(ppm);
 
   file.println();
+  BlinkGreen();
 }
 
 //------------------------------------------------------------------------------
@@ -379,7 +398,10 @@ void ParseMenu(char Stringa) {
       PrintMenu();
       break;
     case 'B':
-      Blink13();
+      BlinkGreen();
+      break;
+    case 'R':
+      BlinkRed();
       break;
     case 'v':
       PrintVersion();
@@ -417,33 +439,27 @@ void setup() {
 
   pinMode(GREENLED, OUTPUT);
   pinMode(REDLED, OUTPUT);
+  digitalWrite(GREENLED, HIGH);
 
-  pinMode(BUTTON, OUTPUT);  //INPUT_PULLUP
+  //pinMode(BUTTON, INPUT);  //INPUT_PULLUP   //Done by the button library
 
   PrintMenu();
 }
 
-void loop() { // run over and over
-  /*
-    if (mySerial.available()) {
-    Serial.write(mySerial.read());
-    }
+void loop() {
+  pushbutton.read();                //Read the button
 
-    if (Serial.available()) {
-    mySerial.write(Serial.read());
-    }
-  */
   if (InAcq == true) {
     recvWithEndMarker();
     receivedChars[7] = '\0';
     showNewData();
-    if (pushbutton.update()) {
-      if (pushbutton.fallingEdge()) {
-        // Close file and stop.
-        file.close();
-        Serial.println(F("Done"));
-        InAcq = false;
-      }
+    if (pushbutton.pressedFor(LONG_PRESS)) {
+      // Close file and stop.
+      file.close();
+      Serial.println(F("Done"));
+      InAcq = false;
+      digitalWrite(GREENLED, HIGH);
+      delay(5000);  //Avoid to cach button again and stops!
     }
     /*
         if (Serial.available()) {  //button check for stop
@@ -456,15 +472,21 @@ void loop() { // run over and over
   }
   else {
     //buttoncheck for start
-    if (pushbutton.update()) {
-      if (pushbutton.fallingEdge()) {
-        StartAcq();
-      }
+    if (pushbutton.pressedFor(LONG_PRESS)) {
+      Serial.println("Long press!");
+      StartAcq();
+      InAcq = true;
+      digitalWrite(GREENLED, LOW);
+      Serial.println("Release button now!");
+      delay(5000);  //Avoid to cach button again and stops!
+
     }
-    GetCharFromSerial();
-    Serial.print(F("Ricevuto->"));
-    Serial.println(inString);
-    ParseMenu(comm);
+    /*
+      GetCharFromSerial();
+      Serial.print(F("Ricevuto->"));
+      Serial.println(inString);
+      ParseMenu(comm);
+    */
   }
 }
 
