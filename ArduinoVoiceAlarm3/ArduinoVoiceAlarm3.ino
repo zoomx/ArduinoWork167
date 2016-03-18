@@ -17,6 +17,7 @@
   http://highlowtech.org/?p=1963
   https://github.com/damellis/PCM
   https://github.com/damellis/EncodeAudio
+  speakerPin = 11; but 11 is for MOSI of SPI!!!!!!
   
 */
 
