@@ -28,8 +28,11 @@
   LED green on PIN 5
   LED red on PIN 6
 
+  2016/03/21
+  Added Alarm on pin 3
+  Added all libraries to the sketch folder
 
-  Arduino Button Library by Jack Christensen
+  /Arduino Button Library by Jack Christensen
   https://github.com/JChristensen/Button
 */
 
@@ -38,9 +41,12 @@
 #include <SdFat.h>
 
 #include <Wire.h>
-#include <DS1307new.h>
+#include "DS1307new.h"
 
-#include <Button.h>        //https://github.com/JChristensen/Button
+#include "Button.h"        //https://github.com/JChristensen/Button
+
+#define BUZZER 3
+#define ALARMFREQ 880
 
 // Log file base name.  Must be six characters or less.
 #define FILE_BASE_NAME "Data"
@@ -79,8 +85,6 @@ bool InAcq = false;
 
 int ore, minuti, secondi;
 
-//byte previousState = HIGH;         // what state was the button last time
-
 Button pushbutton(BUTTON, PULLUP, INVERT, DEBOUNCE_MS);    //Declare the button
 
 //Serial input withEndMarker
@@ -93,6 +97,10 @@ boolean newData = false;
 #define error(msg) sd.errorHalt(F(msg))
 
 int ppm;
+
+boolean isAlarm = false;
+int MaxCO2 = 2000;
+
 //==============================================================================
 // User functions.
 //------------------------------------------------------------------------------
@@ -376,6 +384,13 @@ void logData(int ppm) {
 
   file.println();
   BlinkGreen();
+
+  if (ppm >= MaxCO2) {
+    isAlarm = true;
+  }
+  else {
+    isAlarm = false;
+  }
 }
 
 //------------------------------------------------------------------------------
@@ -453,6 +468,9 @@ void loop() {
     recvWithEndMarker();
     receivedChars[7] = '\0';
     showNewData();
+    if (isAlarm = true) {
+      tone(BUZZER, ALARMFREQ, 800);
+    }
     if (pushbutton.pressedFor(LONG_PRESS)) {
       // Close file and stop.
       file.close();
