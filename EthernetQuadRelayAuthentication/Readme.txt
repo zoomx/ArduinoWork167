@@ -46,3 +46,7 @@ EthernetQuadRelayAuthentication
   It means that on reset the relays are resetted!
   If you need that they are not resetted you have to put
   their state on EEPROM and read again from there upon reset
+
+  2016/10/21
+  Changed the logis since in the original sketch was negate
+  Now 0 mean relay off

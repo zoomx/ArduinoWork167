@@ -97,11 +97,11 @@ byte Relay3pin = RELAY3;
 byte Relay4pin = RELAY4;
 
 // Set the power up state of each relay
-//OFF = 1  ON = 0
-int Relay1state = 1;
-int Relay2state = 1;
-int Relay3state = 1;
-int Relay4state = 1;
+//OFF = 0  ON = 1
+int Relay1state = 0;
+int Relay2state = 0;
+int Relay3state = 0;
+int Relay4state = 0;
 
 /*
   Button Labels
