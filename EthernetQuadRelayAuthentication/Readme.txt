@@ -13,7 +13,7 @@ EthernetQuadRelayAuthentication
   https://github.com/sirleech/Webduino/blob/master/examples/Web_Authentication/Web_Authentication.ino
 
   Added
-  Serial debug but it eat memory!
+  Serial debug but it eats memory!
   DHCP
   Shortened some text
   Pins are in define
