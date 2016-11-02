@@ -21,6 +21,13 @@
   2016 10 26
   Added output of Internal temperature ADC integer
   to extimate better coefficients.
+
+  2016 10 27
+  Changed intADC from long to float
+
+  2016 11 02
+  Added new coefficients for internal temperature after some days
+  of measures
 */
 
 
@@ -48,12 +55,12 @@ DallasTemperature sensors(&oneWire);
 dht11 DHT11;
 
 int errore;
-long intADC;
+float intADC;
 
 void setup(void) {
   Serial.begin(9600);
   delay(500);
-  Serial.print("Sensors Serial 01d mean\n");
+  Serial.print("Sensors Serial 01e mean\n");
   Serial.println(DHT11LIB_VERSION);
   // Start up the library ds1820
   sensors.begin();
@@ -136,11 +143,13 @@ double GetTemp(void)
 
     intADC += wADC;
     // The offset of 324.31 could be wrong. It is just an indication.
-    t += (wADC - 324.31 ) / 1.22;
-
+    //t += (wADC - 324.31 ) / 1.22;
+    //t += (wADC * 0.731 - 256.42);  //get a T too low
+    //t += (wADC - 256.42 ) / 1.367989; //get a T too high
   }
-  t = t / 25;
-  intADC = intADC / 25;
+  //t = t / 25;
+  intADC = intADC / 25;  //!!!!!!!! Only to evaluate coefficients!!!! (but used anyway!!!)
   // The returned temperature is in degrees Celsius.
+  t = intADC * 0.731 - 256.42;
   return (t);
 }
