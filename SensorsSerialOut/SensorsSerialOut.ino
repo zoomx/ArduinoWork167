@@ -1,6 +1,6 @@
 /*
 
-  SensorsSerialOut1c
+  SensorsSerialOut01d
   Get data from sensor and print them on serial
 
   Sensors
@@ -17,6 +17,10 @@
 
   2016 10 07
   Added mean on internal temperature
+
+  2016 10 26
+  Added output of Internal temperature ADC integer
+  to extimate better coefficients.
 */
 
 
@@ -44,11 +48,12 @@ DallasTemperature sensors(&oneWire);
 dht11 DHT11;
 
 int errore;
+long intADC;
 
 void setup(void) {
   Serial.begin(9600);
   delay(500);
-  Serial.print("Sensors Serial 01c mean\n");
+  Serial.print("Sensors Serial 01d mean\n");
   Serial.println(DHT11LIB_VERSION);
   // Start up the library ds1820
   sensors.begin();
@@ -85,6 +90,8 @@ void loop(void) {
   }
   Serial.print(";");
   Serial.print(1024 - analogRead(LDR));
+  Serial.print(";");
+  Serial.print(intADC);
   Serial.println();
   delay(INTERVAL);
   blink();
@@ -115,6 +122,8 @@ double GetTemp(void)
 
   t = 0;
 
+  intADC = 0; //!!!!!!!! Only to evaluate coefficients!!!!
+
   for (int i = 0; i <= 25; i++) {
 
     ADCSRA |= _BV(ADSC);  // Start the ADC
@@ -125,10 +134,13 @@ double GetTemp(void)
     // Reading register "ADCW" takes care of how to read ADCL and ADCH.
     wADC = ADCW;
 
+    intADC += wADC;
     // The offset of 324.31 could be wrong. It is just an indication.
     t += (wADC - 324.31 ) / 1.22;
+
   }
   t = t / 25;
+  intADC = intADC / 25;
   // The returned temperature is in degrees Celsius.
   return (t);
 }
