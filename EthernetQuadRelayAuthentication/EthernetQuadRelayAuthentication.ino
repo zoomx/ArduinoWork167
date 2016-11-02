@@ -3,7 +3,7 @@
   EthernetQuadRelayAuthentication
 
   Quad relay ethernet control with authentication
-  
+
   was RudeBastardWebRelayControl
   http://www.rudebastard.com/article.php?story=20130310155336385
   "started this Arduino project with the objective to be able to login to an ethernet server on my home network and turn a computers power on and off. I have an old server that I seldom need and I don't want to leave running all of the time but when I do need it I want to be able to remotely power it up. I also run this website from a server on my network and it occasionally hangs and needs to be powered down and back up. This project, when complete will allow me to control up to four devices. I did my testing with a relay board but I will switch to solid state switches to do the actual power switching. Once I have completed the packaging I will post another article documenting what I did.
@@ -15,7 +15,7 @@
   https://github.com/sirleech/Webduino/blob/master/examples/Web_Authentication/Web_Authentication.ino
 
   Added
-  Serial debug but it eat memory!
+  Serial debug but it eats memory!
   DHCP
   Shortened some text
   Pins are in define
@@ -69,12 +69,12 @@
 
 //*******************************
 
-static uint8_t mac[] = {
-  0xDE, 0xAD, 0xBE, 0xEF, 0xFE, 0xED
-};
-static uint8_t ip[] = {
-  192, 168, 1, 111
-};
+static uint8_t mac[] = {0xDE, 0xAD, 0xBE, 0xEF, 0xFE, 0xED};
+static uint8_t ip[] = {192, 168, 1, 111};
+// the router's gateway address:
+static uint8_t  gateway[] = { 192, 168, 1, 1 };
+// the subnet:
+static uint8_t subnet[] = { 255, 255, 255, 0 };
 #define PREFIX "/control"
 WebServer webserver(PREFIX, WEBPORT);
 
