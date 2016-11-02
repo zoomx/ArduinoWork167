@@ -1,25 +1,44 @@
+/*
+
+SensorsSerialOut01b
+Get data from sensor and print them on serial
+
+Sensors
+DS1820, DHT11, internal temperature
+
+2014 07 31
+From the original DS1028SerialOut5 for Energia
+
+2014 09 11
+Little corrections
+
+2016 04 28
+changed OneWire, DHT and analog pins
+
+*/
+
+
+//LIBRARIES
 #include <DallasTemperature.h>
 #include <OneWire.h>
 #include <dht11.h>
 
-//2014 07 31
-//From the original DS1028SerialOut5 for Energia
-
-
-//DS1820, DHT11, internal temperature
+#define INTERVAL 15000  //usually 10000
 
 #define LED 13
-#define LDR 4
+#define LDR A1
+
+
 //OneWire DS1820
 //#define OWPIN  9
-#define ONE_WIRE_BUS 2
+#define ONE_WIRE_BUS 3
 // Setup a oneWire instance to communicate with any OneWire devices (not just Maxim/Dallas temperature ICs)
 OneWire oneWire(ONE_WIRE_BUS);
 // Pass our oneWire reference to Dallas Temperature. 
 DallasTemperature sensors(&oneWire);
 
 //DHT11
-#define DHTPIN 3
+#define DHTPIN 2
 dht11 DHT11;
 
 int errore;
@@ -27,7 +46,7 @@ int errore;
 void setup(void) {
   Serial.begin(9600);
   delay(500);
-  Serial.print("Seonsors Serial 01\n");
+  Serial.print("Sensors Serial 01c\n");
   Serial.println(DHT11LIB_VERSION);
   // Start up the library ds1820
   sensors.begin();
@@ -40,7 +59,7 @@ void setup(void) {
 void loop(void) {
   Serial.print(GetTemp(),1);
   Serial.print(";");
-  sensors.requestTemperatures(); // Send the command to get temperatures
+  sensors.requestTemperatures();		 // Send the command to get temperatures
   Serial.print(sensors.getTempCByIndex(0));
   Serial.print(";");
   errore = DHT11.read(DHTPIN);
@@ -65,7 +84,7 @@ void loop(void) {
   Serial.print(";");
   Serial.print(1024-analogRead(LDR));
   Serial.println(); 
-  delay(10000); 
+  delay(INTERVAL); 
   blink();
 }
 
@@ -106,5 +125,3 @@ double GetTemp(void)
   // The returned temperature is in degrees Celcius.
   return (t);
 }
-
-
