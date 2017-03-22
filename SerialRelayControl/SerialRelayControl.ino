@@ -46,13 +46,13 @@ float tempCP;                                     // Current cooler temperature 
 
 
 //**********************************
-void RunCoolingMode(void)
+void RunCoolingMode(float temp)
 {
-  if (tempCP = -127) {
+  if (temp = -127) {
     return;
   }
   //CoolingPeriod++;
-  if (tempCP > ColdTempSetpoint + ColdTempHysteresis )           //If Temp>TempSet+Hysteresis
+  if (temp > ColdTempSetpoint + ColdTempHysteresis )           //If Temp>TempSet+Hysteresis
   {
     digitalWrite(RelayFan, HIGH);                          // Turn ON cooler
     //CoolingActive++;
@@ -60,7 +60,7 @@ void RunCoolingMode(void)
     //Serial.print(" ; ");
     //Serial.print(ColdTempSetpoint + ColdTempHysteresis, DEC);
   }
-  if (tempCP < ColdTempSetpoint - ColdTempHysteresis )           //If Temp<TempSet+Hysteresis
+  if (temp < ColdTempSetpoint - ColdTempHysteresis )           //If Temp<TempSet+Hysteresis
   {
     digitalWrite(RelayFan, LOW);                           // Turn OFF cooler
     Serial.print("; RelayFan-LOW");
@@ -206,21 +206,24 @@ void setup() {
 void loop() {
   sCmd.readSerial();     // We don't do much, just process serial commands
 #ifdef FAN
-  sensors.requestTemperatures();
-  Serial.print(sensors.getTempCByIndex(0));
-  tempCP = sensors.getTempCByIndex(0);
+
 
   unsigned long currentMillis = millis();
 
   if (currentMillis - previousMillis >= interval) {
-    // save the last time you blinked the LED
+    sensors.requestTemperatures();
+
+    tempCP = sensors.getTempCByIndex(0);
+    Serial.print(sensors.getTempCByIndex(0));
+    Serial.println();
+
     previousMillis = currentMillis;
-    RunCoolingMode();
+    RunCoolingMode(tempCP);
 
   }
 
 
-  Serial.println();
+
 #endif
 }
 
