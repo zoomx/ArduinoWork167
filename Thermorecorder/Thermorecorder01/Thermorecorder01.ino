@@ -1,6 +1,8 @@
 /*
   Thermorecorder01
 
+  NOT TESTED!!!
+
   Record thermocouple on a SD
   Start and stop by button
 
@@ -24,7 +26,7 @@
   11
   12
   13
-  
+
 
   DS1307
   Pin used A4 (SDA),A5 (SDL)
@@ -44,7 +46,16 @@
 #include <Wire.h>
 #include "DS1307new.h"     //by Peter Schmelzer & Oliver Kraus
 #include "Button.h"        //https://github.com/JChristensen/Button
+#include "max6675.h"
 
+const uint8_t thermoDO = 4;
+const uint8_t thermoCS = 5;
+const uint8_t thermoCLK = 6;
+
+MAX6675 thermocouple(thermoCLK, thermoCS, thermoDO);
+
+const uint8_t vccPin = 3;
+const uint8_t gndPin = 2;
 
 // Log file base name.  Must be six characters or less.
 #define FILE_BASE_NAME "Data"
@@ -64,7 +75,7 @@
 #define INLENGTH 5          //Needed for input with termination
 #define INTERMINATOR 13     //Needed for input with termination
 char inString[INLENGTH + 1]; //Needed for input with termination
-int inCount;                //Needed for input with termination
+uint8_t inCount;                //Needed for input with termination
 char comm;
 
 // SD chip select pin.  Be sure to disable any other SPI devices such as Enet.
@@ -78,7 +89,7 @@ SdFile file;
 
 bool InAcq = false;
 
-int ore, minuti, secondi;
+uint8_t ore, minuti, secondi;
 
 Button pushbutton(BUTTON, PULLUP, INVERT, DEBOUNCE_MS);    //Declare the button
 
@@ -89,6 +100,9 @@ char receivedChars[numChars];  // an array to store the received data
 boolean newData = false;
 
 float Temp;
+
+uint32_t previousMillis = 0;
+uint32_t intervallo = 2500;
 
 //==============================================================================
 // User functions.
@@ -266,6 +280,8 @@ void StartAcq() {
   // Write data header.
   writeHeader();
   InAcq = true;
+  logData(thermocouple.readCelsius());
+  previousMillis = millis();
 }
 //------------------------------------------------------------------------------
 void PrintVersion() {
@@ -294,10 +310,17 @@ void GetCharFromSerial() {
   comm = inString[0];
 }
 //------------------------------------------------------------------------------
-
-
-//------------------------------------------------------------------------------
-void showNewData() {
+void CheckTime() {
+  if ((millis() - previousMillis) > intervallo) {
+    Serial.print("C = ");
+    //Serial.println(thermocouple.readCelsius());
+    logData(thermocouple.readCelsius());
+    previousMillis = millis();
+  }
+}
+/*
+  //------------------------------------------------------------------------------
+  void showNewData() {
   if (newData == true) {
     //Serial.print("This just in ... ");
     Serial.print(receivedChars);
@@ -305,8 +328,8 @@ void showNewData() {
     logData(Temp);
     newData = false;
   }
-}
-
+  }
+*/
 //------------------------------------------------------------------------------
 // Write data header.
 void writeHeader() {
@@ -319,6 +342,7 @@ void writeHeader() {
 // Log a data record.
 void logData(float temp) {
 
+  Serial.println(temp);
   RTC.getTime();
   delay(100);
   SD_print_date(RTC.year, RTC.month, RTC.day);
@@ -417,6 +441,9 @@ void setup() {
 
   //pinMode(BUTTON, INPUT);  //INPUT_PULLUP   //Done by the button library
 
+  pinMode(vccPin, OUTPUT); digitalWrite(vccPin, HIGH);
+  pinMode(gndPin, OUTPUT); digitalWrite(gndPin, LOW);
+
   PrintMenu();
 }
 
@@ -426,8 +453,8 @@ void loop() {
   if (InAcq == true) {
     //recvWithEndMarker();
     //receivedChars[7] = '\0';
-    showNewData();   //Maybe change in logdata!!!
-
+    //showNewData();   //Maybe change in logdata!!!
+    CheckTime();
     if (pushbutton.pressedFor(LONG_PRESS)) {
       // Close file and stop.
       file.close();
