@@ -4,8 +4,7 @@
   AuriolDecoder01, it prints out using RFlink protocol
 
   todo
-  add code for negative temperatures
-  check rai decoding since no packet is decoded
+  check rain decoding since no packet is decoded
 
 
   Lidl station send cumulative rain until battery change.
@@ -512,6 +511,11 @@ void decodeWindData()
 
     //printTime();
     //Serial.print(LANG_INFO_WIND_AVG);
+    float windavg = (float) windAverageSpeed / 5;    //in m/s
+    windavg = windavg * 3.6;  //in Km/h
+    windavg = windavg * 10;
+    windAverageSpeed = (int)windavg;
+
     Serial.print("20;");
     Serial.print(RFlink_packet_counter);
     RFlink_packet_counter++;
@@ -521,8 +525,8 @@ void decodeWindData()
     //Serial.print(ID, HEX);
     Serial.print(";WINSP=");
 
-    //Serial.print((float)windAverageSpeed);
-    windAverageSpeedRaw = windAverageSpeed * 10;
+
+
     snprintf(HexStr, 5, "%04x", windAverageSpeed);
     Serial.print(HexStr);
     //Serial.print(windAverageSpeed, HEX);
@@ -552,7 +556,10 @@ void decodeWindData()
     for (i = 24; i < 32; i++) {
       windGust |= encodedBits[i] << (i - 24);
     }
-
+    float windgus = (float) windGust / 5;    //in m/s
+    windgus = windgus * 3.6;  //in Km/h
+    windgus = windgus * 10;
+    windGust = (int)windgus;
     //printTime();
     //Serial.print(LANG_INFO_WIND_DIR_GUST);
     Serial.print("20;");
@@ -571,10 +578,7 @@ void decodeWindData()
 
     windDirection = direction;
     Serial.print(";WINGS=");
-    //Serial.print((float)windGust / 5);
-    windGustRaw = windGust * 10;
-    windGustRev = (float)windGust / 5;
-    snprintf(HexStr, 5, "%04x", windGustRaw);
+    snprintf(HexStr, 5, "%04x", windGust);
     Serial.print(HexStr);
     //Serial.print(windGustRaw, HEX);
 
@@ -603,7 +607,9 @@ void decodeWindData()
       temperature = -2048 + temperature;
     }
     float temperatureFinal = (float)temperature / 10;
-
+    if (temperature < 0) {
+      temperature = 32768 + temperature;    //negative temperature in RFlink
+    }
     unsigned int humidityOnes = 0;
     for (i = 24; i < 28; i++) {
       humidityOnes |= encodedBits[i] << (i - 24);
